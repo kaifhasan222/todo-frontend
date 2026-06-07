@@ -28,18 +28,18 @@
 
 .content {
   min-width: 0;
+  display: grid;
+  gap: var(--space-2);
 }
 
 .title,
 .doneTitle {
-  overflow: hidden;
   margin: 0;
   color: var(--color-text);
   font-size: 1rem;
   font-weight: 800;
   line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .doneTitle {
@@ -47,17 +47,56 @@
   text-decoration: line-through;
 }
 
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .badge,
-.doneBadge {
+.doneBadge,
+.priorityBadge,
+.dueBadge,
+.overdueBadge {
   display: inline-flex;
-  margin-top: var(--space-1);
-  color: var(--color-warning);
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 var(--space-2);
+  border-radius: 999rem;
+  color: var(--color-muted);
+  background: var(--color-surface-soft);
   font-size: 0.8125rem;
   font-weight: 800;
 }
 
+.badge {
+  color: var(--color-warning);
+}
+
 .doneBadge {
   color: var(--color-success);
+}
+
+.dueBadge {
+  color: var(--color-accent);
+}
+
+.overdueBadge {
+  color: var(--color-danger);
+  background: rgba(218, 58, 58, 0.08);
+}
+
+.priorityLow {
+  color: var(--color-success);
+}
+
+.priorityMedium {
+  color: var(--color-warning);
+}
+
+.priorityHigh {
+  color: var(--color-danger);
+  background: rgba(218, 58, 58, 0.08);
 }
 
 .actions {

@@ -1,6 +1,7 @@
 import { requestJson } from "@/shared/utils/requestJson";
 import type {
   CreateTodoInput,
+  TodoQueryParams,
   Todo,
   UpdateTodoInput,
 } from "../types/todo";
@@ -10,9 +11,33 @@ const API_BASE_URL =
 
 const TODOS_ENDPOINT = `${API_BASE_URL}/api/todos`;
 
+const buildTodosUrl = (params?: TodoQueryParams): string => {
+  if (!params) {
+    return TODOS_ENDPOINT;
+  }
+
+  const searchParams = new URLSearchParams();
+
+  if (typeof params.search === "string" && params.search.trim()) {
+    searchParams.set("search", params.search.trim());
+  }
+
+  if (params.status && params.status !== "all") {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.sort && params.sort !== "newest") {
+    searchParams.set("sort", params.sort);
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `${TODOS_ENDPOINT}?${queryString}` : TODOS_ENDPOINT;
+};
+
 export const todoApi = {
-  getTodos: async (): Promise<Todo[]> => {
-    return requestJson<Todo[]>(TODOS_ENDPOINT, {
+  getTodos: async (params?: TodoQueryParams): Promise<Todo[]> => {
+    return requestJson<Todo[]>(buildTodosUrl(params), {
       method: "GET",
       cache: "no-store",
     });

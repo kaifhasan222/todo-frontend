@@ -3,14 +3,19 @@ import { toast } from "sonner";
 
 import { getErrorMessage } from "@/shared/utils/getErrorMessage";
 import { todoApi } from "../api/todoApi";
-import type { CreateTodoInput, Todo, UpdateTodoInput } from "../types/todo";
+import type {
+  CreateTodoInput,
+  Todo,
+  TodoQueryParams,
+  UpdateTodoInput,
+} from "../types/todo";
 
 const TODO_QUERY_KEY = ["todos"] as const;
 
-export function useTodosQuery() {
+export function useTodosQuery(params?: TodoQueryParams) {
   return useQuery({
-    queryKey: TODO_QUERY_KEY,
-    queryFn: todoApi.getTodos,
+    queryKey: [...TODO_QUERY_KEY, params ?? {}] as const,
+    queryFn: () => todoApi.getTodos(params),
   });
 }
 

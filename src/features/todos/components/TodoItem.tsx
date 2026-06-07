@@ -2,7 +2,8 @@
 
 import { Check, Pencil, Trash2 } from "lucide-react";
 
-import type { Todo } from "../types/todo";
+import { formatDueDate, isOverdue } from "../utils/filterTodos";
+import type { Todo, TodoPriority } from "../types/todo";
 import styles from "../styles/TodoItem.module.css";
 
 interface TodoItemProps {
@@ -20,6 +21,13 @@ export function TodoItem({
   onEdit,
   onToggle,
 }: TodoItemProps) {
+  const overdue = isOverdue(todo);
+  const priorityClass: Record<TodoPriority, string> = {
+    low: styles.priorityLow,
+    medium: styles.priorityMedium,
+    high: styles.priorityHigh,
+  };
+
   return (
     <li className={styles.item}>
       <button
@@ -36,9 +44,19 @@ export function TodoItem({
         <p className={todo.completed ? styles.doneTitle : styles.title}>
           {todo.title}
         </p>
-        <span className={todo.completed ? styles.doneBadge : styles.badge}>
-          {todo.completed ? "Completed" : "Active"}
-        </span>
+        <div className={styles.meta}>
+          <span className={`${styles.priorityBadge} ${priorityClass[todo.priority]}`}>
+            {todo.priority}
+          </span>
+          {todo.due_date ? (
+            <span className={overdue ? styles.overdueBadge : styles.dueBadge}>
+              {overdue ? "Overdue" : `Due ${formatDueDate(todo.due_date)}`}
+            </span>
+          ) : null}
+          <span className={todo.completed ? styles.doneBadge : styles.badge}>
+            {todo.completed ? "Completed" : "Active"}
+          </span>
+        </div>
       </div>
 
       <div className={styles.actions}>

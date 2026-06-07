@@ -5,6 +5,7 @@ import { RefreshCw, Search } from "lucide-react";
 import { Modal } from "@/shared/components/Modal";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 import { useTodoUiStore } from "@/shared/store/useTodoUiStore";
+import { useDebouncedValue } from "@/shared/utils/useDebouncedValue";
 import { useLogoutMutation } from "@/features/auth/hooks/useAuth";
 import {
   useCreateTodoMutation,
@@ -12,7 +13,7 @@ import {
   useTodosQuery,
   useUpdateTodoMutation,
 } from "../hooks/useTodos";
-import { filterTodos, getTodoCounts } from "../utils/filterTodos";
+import { getTodoCounts } from "../utils/filterTodos";
 import { TodoForm } from "./TodoForm";
 import { TodoItem } from "./TodoItem";
 import styles from "../styles/TodoApp.module.css";
@@ -23,26 +24,39 @@ const FILTER_OPTIONS = [
   { label: "Completed", value: "completed" },
 ] as const;
 
+const SORT_OPTIONS = [
+  { label: "Newest", value: "newest" },
+  { label: "Oldest", value: "oldest" },
+  { label: "Title A-Z", value: "title_asc" },
+  { label: "Title Z-A", value: "title_desc" },
+  { label: "Completed first", value: "completed_first" },
+  { label: "Pending first", value: "pending_first" },
+] as const;
+
 export function TodoApp() {
-  const { data: todos = [], isLoading, isError, refetch, isFetching } =
-    useTodosQuery();
+  const { filter, search, sort, modal, selectedTodo, closeModal, openModal, setFilter, setSearch, setSort } =
+    useTodoUiStore();
+  const debouncedSearch = useDebouncedValue(search, 350);
   const user = useAuthSessionStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
   const createTodo = useCreateTodoMutation();
   const updateTodo = useUpdateTodoMutation();
   const deleteTodo = useDeleteTodoMutation();
-  const {
-    filter,
-    search,
-    modal,
-    selectedTodo,
-    closeModal,
-    openModal,
-    setFilter,
-    setSearch,
-  } = useTodoUiStore();
-  const counts = getTodoCounts(todos);
-  const visibleTodos = filterTodos(todos, filter, search);
+  const listQuery = useTodosQuery({
+    search: debouncedSearch,
+    status: filter,
+    sort,
+  });
+  const statsQuery = useTodosQuery({
+    status: "all",
+    sort: "newest",
+  });
+  const todos = listQuery.data ?? [];
+  const counts = getTodoCounts(statsQuery.data ?? []);
+  const isLoading = listQuery.isLoading;
+  const isError = listQuery.isError;
+  const refetch = listQuery.refetch;
+  const isFetching = listQuery.isFetching;
 
   return (
     <main className={styles.page}>
@@ -88,12 +102,16 @@ export function TodoApp() {
             <span>{counts.completed}</span>
             <p>Completed</p>
           </div>
+          <div>
+            <span>{counts.overdue}</span>
+            <p>Overdue</p>
+          </div>
         </section>
 
         <section className={styles.panel}>
           <TodoForm
             isSubmitting={createTodo.isPending}
-            onSubmit={(title) => createTodo.mutate({ title })}
+            onSubmit={(input) => createTodo.mutate(input)}
           />
 
           <div className={styles.toolbar}>
@@ -106,22 +124,39 @@ export function TodoApp() {
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
-            <div className={styles.segmented} aria-label="Filter todos">
-              {FILTER_OPTIONS.map((option) => (
-                <button
-                  aria-pressed={filter === option.value}
-                  className={
-                    filter === option.value
-                      ? styles.segmentActive
-                      : styles.segment
-                  }
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFilter(option.value)}
+            <div className={styles.toolbarControls}>
+              <label className={styles.sortLabel} htmlFor="todo-sort">
+                <span>Sort</span>
+                <select
+                  className={styles.sortSelect}
+                  id="todo-sort"
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value as typeof sort)}
                 >
-                  {option.label}
-                </button>
-              ))}
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className={styles.segmented} aria-label="Filter todos">
+                {FILTER_OPTIONS.map((option) => (
+                  <button
+                    aria-pressed={filter === option.value}
+                    className={
+                      filter === option.value
+                        ? styles.segmentActive
+                        : styles.segment
+                    }
+                    key={option.value}
+                    type="button"
+                    onClick={() => setFilter(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -135,13 +170,13 @@ export function TodoApp() {
             </div>
           ) : null}
 
-          {!isLoading && !isError && visibleTodos.length === 0 ? (
+          {!isLoading && !isError && todos.length === 0 ? (
             <div className={styles.state}>No todos match this view.</div>
           ) : null}
 
-          {!isLoading && !isError && visibleTodos.length > 0 ? (
+          {!isLoading && !isError && todos.length > 0 ? (
             <ul className={styles.list}>
-              {visibleTodos.map((todo) => (
+              {todos.map((todo) => (
                 <TodoItem
                   isUpdating={updateTodo.isPending}
                   key={todo.id}
@@ -170,15 +205,15 @@ export function TodoApp() {
         {selectedTodo ? (
           <div className={styles.modalBody}>
             <TodoForm
-              initialTitle={selectedTodo.title}
+              initialTodo={selectedTodo}
               isSubmitting={updateTodo.isPending}
               mode="edit"
               submitLabel="Save changes"
-              onSubmit={(title) =>
+              onSubmit={(input) =>
                 updateTodo.mutate(
                   {
                     id: selectedTodo.id,
-                    input: { title },
+                    input,
                   },
                   {
                     onSuccess: closeModal,
