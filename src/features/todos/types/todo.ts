@@ -15,13 +15,36 @@ export interface Todo {
   user_id: number;
   due_date: string | null;
   priority: TodoPriority;
+  tags: string[];
   created_at: string;
+}
+
+export interface TodoSummary {
+  total: number;
+  active: number;
+  completed: number;
+  overdue: number;
+  completionRate: number;
+}
+
+export interface TodoPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface TodoListResponse {
+  items: Todo[];
+  pagination: TodoPagination;
+  summary: TodoSummary;
 }
 
 export interface CreateTodoInput {
   title: string;
   due_date?: string | null;
   priority?: TodoPriority;
+  tags?: string[];
 }
 
 export interface UpdateTodoInput {
@@ -29,10 +52,13 @@ export interface UpdateTodoInput {
   completed?: boolean;
   due_date?: string | null;
   priority?: TodoPriority;
+  tags?: string[];
 }
 
 export interface TodoQueryParams {
   search?: string;
   status?: TodoStatus;
   sort?: TodoSort;
+  page?: number;
+  limit?: number;
 }

@@ -1,0 +1,269 @@
+.wrap {
+  overflow-x: auto;
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  min-width: 58rem;
+  border-collapse: collapse;
+}
+
+.headCell,
+.titleCell,
+.statusCell,
+.priorityCell,
+.tagsCell,
+.dueCell,
+.actionsCell,
+.skeletonTitleCell,
+.skeletonCell,
+.skeletonActionsCell {
+  padding: var(--space-4) var(--space-4);
+  border-bottom: 0.0625rem solid rgba(23, 32, 42, 0.08);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.headCell {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.row:hover {
+  background: rgba(20, 108, 148, 0.04);
+}
+
+.titleCell {
+  min-width: 16rem;
+}
+
+.title,
+.doneTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.doneTitle {
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.statusCell,
+.priorityCell,
+.dueCell,
+.actionsCell {
+  white-space: nowrap;
+}
+
+.tagsCell {
+  min-width: 14rem;
+}
+
+.statusActive,
+.statusDone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 999rem;
+  padding: 0 var(--space-3);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 900;
+}
+
+.statusActive {
+  background: rgba(20, 108, 148, 0.08);
+  color: var(--color-accent);
+}
+
+.statusDone {
+  background: rgba(23, 114, 69, 0.1);
+  color: var(--color-success);
+}
+
+.priorityBadge,
+.dueBadge,
+.overdueBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  padding: 0 var(--space-3);
+  border-radius: 999rem;
+  font-size: 0.8125rem;
+  font-weight: 900;
+}
+
+.priorityBadge {
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+}
+
+.priorityLow {
+  color: var(--color-success);
+}
+
+.priorityMedium {
+  color: var(--color-warning);
+}
+
+.priorityHigh {
+  color: var(--color-danger);
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  padding: 0 var(--space-3);
+  border-radius: 999rem;
+  background: rgba(20, 108, 148, 0.08);
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.dueBadge {
+  background: rgba(20, 108, 148, 0.08);
+  color: var(--color-accent);
+}
+
+.overdueBadge {
+  background: rgba(218, 58, 58, 0.1);
+  color: var(--color-danger);
+}
+
+.emptyCell {
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.actionsCell {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.iconButton,
+.dangerButton {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+}
+
+.dangerButton {
+  color: var(--color-danger);
+}
+
+.skeletonRow {
+  animation: skeletonFade 1.5s ease-in-out infinite;
+}
+
+.skeletonTitle {
+  display: block;
+  width: min(100%, 20rem);
+  height: 0.95rem;
+  border-radius: 999rem;
+  background: linear-gradient(
+    90deg,
+    rgba(23, 32, 42, 0.08) 0%,
+    rgba(23, 32, 42, 0.14) 50%,
+    rgba(23, 32, 42, 0.08) 100%
+  );
+  background-size: 12rem 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeletonBadge {
+  display: inline-block;
+  width: 6rem;
+  height: 1.875rem;
+  border-radius: 999rem;
+  background: linear-gradient(
+    90deg,
+    rgba(23, 32, 42, 0.08) 0%,
+    rgba(23, 32, 42, 0.14) 50%,
+    rgba(23, 32, 42, 0.08) 100%
+  );
+  background-size: 12rem 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeletonTags {
+  display: inline-block;
+  width: 10rem;
+  height: 1.875rem;
+  border-radius: 999rem;
+  background: linear-gradient(
+    90deg,
+    rgba(23, 32, 42, 0.08) 0%,
+    rgba(23, 32, 42, 0.14) 50%,
+    rgba(23, 32, 42, 0.08) 100%
+  );
+  background-size: 12rem 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeletonIcon {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    rgba(23, 32, 42, 0.08) 0%,
+    rgba(23, 32, 42, 0.14) 50%,
+    rgba(23, 32, 42, 0.08) 100%
+  );
+  background-size: 12rem 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -12rem 0;
+  }
+
+  100% {
+    background-position: 12rem 0;
+  }
+}
+
+@keyframes skeletonFade {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 48rem) {
+  .table {
+    min-width: 54rem;
+  }
+}

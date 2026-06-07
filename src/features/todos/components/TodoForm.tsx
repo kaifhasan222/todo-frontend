@@ -10,7 +10,7 @@ import styles from "../styles/TodoForm.module.css";
 
 interface TodoFormProps {
   submitLabel?: string;
-  initialTodo?: Pick<Todo, "title" | "due_date" | "priority"> | null;
+  initialTodo?: Pick<Todo, "title" | "due_date" | "priority" | "tags"> | null;
   isSubmitting?: boolean;
   mode?: "create" | "edit";
   onSubmit: (input: CreateTodoInput) => void;
@@ -28,6 +28,7 @@ export function TodoForm({
   const [priority, setPriority] = useState<TodoPriority>(
     initialTodo?.priority ?? "medium",
   );
+  const [tagsText, setTagsText] = useState("");
   const { errors, validate, clearErrors } = useTodoValidation();
   const buttonIcon =
     mode === "create" ? (
@@ -40,8 +41,19 @@ export function TodoForm({
     setTitle(initialTodo?.title ?? "");
     setDueDate(initialTodo?.due_date ? initialTodo.due_date.slice(0, 10) : "");
     setPriority(initialTodo?.priority ?? "medium");
+    setTagsText(initialTodo?.tags?.join(", ") ?? "");
     clearErrors();
   }, [clearErrors, initialTodo]);
+
+  const normalizeTags = (value: string): string[] =>
+    Array.from(
+      new Set(
+        value
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0),
+      ),
+    );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,12 +66,14 @@ export function TodoForm({
       title: title.trim(),
       due_date: dueDate ? dueDate : null,
       priority,
+      tags: normalizeTags(tagsText),
     });
 
     if (mode === "create") {
       setTitle("");
       setDueDate("");
       setPriority("medium");
+      setTagsText("");
       clearErrors();
     }
   };
@@ -161,6 +175,21 @@ export function TodoForm({
             </p>
           ) : null}
         </div>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor={`${mode}-todo-tags`}>
+          Tags
+        </label>
+        <input
+          className={styles.input}
+          disabled={isSubmitting}
+          id={`${mode}-todo-tags`}
+          placeholder="work, personal, urgent"
+          value={tagsText}
+          onChange={(event) => setTagsText(event.target.value)}
+        />
+        <p className={styles.helpText}>Comma-separated tags</p>
       </div>
     </form>
   );

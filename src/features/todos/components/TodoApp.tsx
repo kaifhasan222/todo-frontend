@@ -1,6 +1,7 @@
 "use client";
 
 import { RefreshCw, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Modal } from "@/shared/components/Modal";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
@@ -13,9 +14,10 @@ import {
   useTodosQuery,
   useUpdateTodoMutation,
 } from "../hooks/useTodos";
-import { getTodoCounts } from "../utils/filterTodos";
 import { TodoForm } from "./TodoForm";
-import { TodoItem } from "./TodoItem";
+import { TodoPagination } from "./TodoPagination";
+import { TodoTable } from "./TodoTable";
+import { TodoTableSkeleton } from "./TodoTableSkeleton";
 import styles from "../styles/TodoApp.module.css";
 
 const FILTER_OPTIONS = [
@@ -33,9 +35,20 @@ const SORT_OPTIONS = [
   { label: "Pending first", value: "pending_first" },
 ] as const;
 
+const TODO_PAGE_SIZE = 8;
+
+const EMPTY_SUMMARY = {
+  total: 0,
+  active: 0,
+  completed: 0,
+  overdue: 0,
+  completionRate: 0,
+};
+
 export function TodoApp() {
   const { filter, search, sort, modal, selectedTodo, closeModal, openModal, setFilter, setSearch, setSort } =
     useTodoUiStore();
+  const [page, setPage] = useState(1);
   const debouncedSearch = useDebouncedValue(search, 350);
   const user = useAuthSessionStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
@@ -46,17 +59,40 @@ export function TodoApp() {
     search: debouncedSearch,
     status: filter,
     sort,
+    page,
+    limit: TODO_PAGE_SIZE,
   });
-  const statsQuery = useTodosQuery({
-    status: "all",
-    sort: "newest",
-  });
-  const todos = listQuery.data ?? [];
-  const counts = getTodoCounts(statsQuery.data ?? []);
+  const todoResponse = listQuery.data;
+  const todos = todoResponse?.items ?? [];
+  const counts = todoResponse?.summary ?? EMPTY_SUMMARY;
+  const pagination = todoResponse?.pagination;
   const isLoading = listQuery.isLoading;
   const isError = listQuery.isError;
   const refetch = listQuery.refetch;
   const isFetching = listQuery.isFetching;
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, filter, sort]);
+
+  useEffect(() => {
+    const totalPages = pagination?.totalPages ?? 0;
+
+    if (totalPages === 0 && page !== 1) {
+      setPage(1);
+      return;
+    }
+
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, pagination?.totalPages]);
+
+  const pageStart = pagination && pagination.total > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0;
+  const pageEnd =
+    pagination && pagination.total > 0
+      ? Math.min(pagination.page * pagination.limit, pagination.total)
+      : 0;
 
   return (
     <main className={styles.page}>
@@ -111,7 +147,11 @@ export function TodoApp() {
         <section className={styles.panel}>
           <TodoForm
             isSubmitting={createTodo.isPending}
-            onSubmit={(input) => createTodo.mutate(input)}
+            onSubmit={(input) =>
+              createTodo.mutate(input, {
+                onSuccess: () => setPage(1),
+              })
+            }
           />
 
           <div className={styles.toolbar}>
@@ -160,9 +200,7 @@ export function TodoApp() {
             </div>
           </div>
 
-          {isLoading ? (
-            <div className={styles.state}>Loading todos...</div>
-          ) : null}
+          {isLoading ? <TodoTableSkeleton rowCount={TODO_PAGE_SIZE} /> : null}
 
           {isError ? (
             <div className={styles.state}>
@@ -175,23 +213,29 @@ export function TodoApp() {
           ) : null}
 
           {!isLoading && !isError && todos.length > 0 ? (
-            <ul className={styles.list}>
-              {todos.map((todo) => (
-                <TodoItem
-                  isUpdating={updateTodo.isPending}
-                  key={todo.id}
-                  todo={todo}
-                  onDelete={(item) => openModal("delete", item)}
-                  onEdit={(item) => openModal("edit", item)}
-                  onToggle={(item) =>
-                    updateTodo.mutate({
-                      id: item.id,
-                      input: { completed: !item.completed },
-                    })
-                  }
-                />
-              ))}
-            </ul>
+            <TodoTable
+              isActionPending={updateTodo.isPending || deleteTodo.isPending}
+              todos={todos}
+              onDelete={(item) => openModal("delete", item)}
+              onEdit={(item) => openModal("edit", item)}
+              onToggle={(item) =>
+                updateTodo.mutate({
+                  id: item.id,
+                  input: { completed: !item.completed },
+                })
+              }
+            />
+          ) : null}
+
+          {!isLoading && !isError && pagination && pagination.total > 0 ? (
+            <TodoPagination
+              currentEnd={pageEnd}
+              currentStart={pageStart}
+              isFetching={isFetching}
+              onNext={() => setPage((currentPage) => currentPage + 1)}
+              onPrevious={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+              pagination={pagination}
+            />
           ) : null}
         </section>
       </section>
