@@ -138,7 +138,8 @@
   flex-wrap: wrap;
 }
 
-.sortLabel {
+.sortLabel,
+.tagFilter {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -147,7 +148,8 @@
   font-weight: 800;
 }
 
-.sortSelect {
+.sortSelect,
+.tagFilter input {
   min-width: 11rem;
   height: 3rem;
   border: 0.0625rem solid var(--color-border);
@@ -156,6 +158,11 @@
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+}
+
+.tagFilter input {
+  min-width: 8rem;
+  width: 9rem;
 }
 
 .search {
@@ -269,6 +276,22 @@
   color: #ffffff;
 }
 
+:global(:root[data-theme="dark"]) .userChip,
+:global(:root[data-theme="dark"]) .stats div,
+:global(:root[data-theme="dark"]) .panel {
+  background: rgba(19, 32, 39, 0.88);
+}
+
+:global(:root[data-theme="dark"]) .refreshButton {
+  background: var(--color-surface);
+  color: var(--color-accent-strong);
+}
+
+:global(:root[data-theme="dark"]) .logoutButton {
+  background: var(--color-accent-strong);
+  color: #081115;
+}
+
 @media (max-width: 48rem) {
   .page {
     padding: var(--space-6) var(--space-3);
@@ -291,12 +314,14 @@
     justify-content: stretch;
   }
 
-  .sortLabel {
+  .sortLabel,
+  .tagFilter {
     width: 100%;
     justify-content: space-between;
   }
 
-  .sortSelect {
+  .sortSelect,
+  .tagFilter input {
     min-width: 0;
     flex: 1 1 auto;
   }

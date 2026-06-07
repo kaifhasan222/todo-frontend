@@ -6,7 +6,9 @@ export type TodoSort =
   | "title_asc"
   | "title_desc"
   | "completed_first"
-  | "pending_first";
+  | "pending_first"
+  | "due_date"
+  | "priority";
 
 export interface Todo {
   id: number;
@@ -59,6 +61,8 @@ export interface TodoQueryParams {
   search?: string;
   status?: TodoStatus;
   sort?: TodoSort;
+  priority?: TodoPriority | "all";
+  tag?: string;
   page?: number;
   limit?: number;
 }

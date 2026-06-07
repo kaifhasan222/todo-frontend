@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { Todo } from "@/features/todos/types/todo";
+import type { Todo, TodoPriority } from "@/features/todos/types/todo";
 
 export type TodoFilter = "all" | "active" | "completed";
 export type TodoSort =
@@ -9,17 +9,24 @@ export type TodoSort =
   | "title_asc"
   | "title_desc"
   | "completed_first"
-  | "pending_first";
+  | "pending_first"
+  | "due_date"
+  | "priority";
 export type TodoModal = "edit" | "delete" | null;
+export type TodoPriorityFilter = TodoPriority | "all";
 
 interface TodoUiState {
   filter: TodoFilter;
   sort: TodoSort;
+  priorityFilter: TodoPriorityFilter;
+  tagFilter: string;
   search: string;
   modal: TodoModal;
   selectedTodo: Todo | null;
   setFilter: (filter: TodoFilter) => void;
   setSort: (sort: TodoSort) => void;
+  setPriorityFilter: (priorityFilter: TodoPriorityFilter) => void;
+  setTagFilter: (tagFilter: string) => void;
   setSearch: (search: string) => void;
   openModal: (modal: Exclude<TodoModal, null>, todo: Todo) => void;
   closeModal: () => void;
@@ -28,11 +35,15 @@ interface TodoUiState {
 export const useTodoUiStore = create<TodoUiState>((set) => ({
   filter: "all",
   sort: "newest",
+  priorityFilter: "all",
+  tagFilter: "",
   search: "",
   modal: null,
   selectedTodo: null,
   setFilter: (filter) => set({ filter }),
   setSort: (sort) => set({ sort }),
+  setPriorityFilter: (priorityFilter) => set({ priorityFilter }),
+  setTagFilter: (tagFilter) => set({ tagFilter }),
   setSearch: (search) => set({ search }),
   openModal: (modal, todo) => set({ modal, selectedTodo: todo }),
   closeModal: () => set({ modal: null, selectedTodo: null }),

@@ -4,6 +4,7 @@ import { RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Modal } from "@/shared/components/Modal";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 import { useTodoUiStore } from "@/shared/store/useTodoUiStore";
 import { useDebouncedValue } from "@/shared/utils/useDebouncedValue";
@@ -33,6 +34,15 @@ const SORT_OPTIONS = [
   { label: "Title Z-A", value: "title_desc" },
   { label: "Completed first", value: "completed_first" },
   { label: "Pending first", value: "pending_first" },
+  { label: "Due date", value: "due_date" },
+  { label: "Priority", value: "priority" },
+] as const;
+
+const PRIORITY_OPTIONS = [
+  { label: "All priorities", value: "all" },
+  { label: "High", value: "high" },
+  { label: "Medium", value: "medium" },
+  { label: "Low", value: "low" },
 ] as const;
 
 const TODO_PAGE_SIZE = 8;
@@ -46,10 +56,26 @@ const EMPTY_SUMMARY = {
 };
 
 export function TodoApp() {
-  const { filter, search, sort, modal, selectedTodo, closeModal, openModal, setFilter, setSearch, setSort } =
+  const {
+    filter,
+    search,
+    sort,
+    priorityFilter,
+    tagFilter,
+    modal,
+    selectedTodo,
+    closeModal,
+    openModal,
+    setFilter,
+    setSearch,
+    setSort,
+    setPriorityFilter,
+    setTagFilter,
+  } =
     useTodoUiStore();
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebouncedValue(search, 350);
+  const debouncedTag = useDebouncedValue(tagFilter, 350);
   const user = useAuthSessionStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
   const createTodo = useCreateTodoMutation();
@@ -59,6 +85,8 @@ export function TodoApp() {
     search: debouncedSearch,
     status: filter,
     sort,
+    priority: priorityFilter,
+    tag: debouncedTag,
     page,
     limit: TODO_PAGE_SIZE,
   });
@@ -73,7 +101,7 @@ export function TodoApp() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, filter, sort]);
+  }, [debouncedSearch, debouncedTag, filter, priorityFilter, sort]);
 
   useEffect(() => {
     const totalPages = pagination?.totalPages ?? 0;
@@ -105,6 +133,7 @@ export function TodoApp() {
           </div>
           <div className={styles.headerActions}>
             {user ? <div className={styles.userChip}>{user.name}</div> : null}
+            <ThemeToggle />
             <button
               aria-label="Refresh todos"
               className={styles.refreshButton}
@@ -179,6 +208,32 @@ export function TodoApp() {
                     </option>
                   ))}
                 </select>
+              </label>
+              <label className={styles.sortLabel} htmlFor="todo-priority-filter">
+                <span>Priority</span>
+                <select
+                  className={styles.sortSelect}
+                  id="todo-priority-filter"
+                  value={priorityFilter}
+                  onChange={(event) =>
+                    setPriorityFilter(event.target.value as typeof priorityFilter)
+                  }
+                >
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.tagFilter} htmlFor="todo-tag-filter">
+                <span>Tag</span>
+                <input
+                  id="todo-tag-filter"
+                  placeholder="urgent"
+                  value={tagFilter}
+                  onChange={(event) => setTagFilter(event.target.value)}
+                />
               </label>
               <div className={styles.segmented} aria-label="Filter todos">
                 {FILTER_OPTIONS.map((option) => (

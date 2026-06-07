@@ -31,6 +31,14 @@ const buildTodosUrl = (params?: TodoQueryParams): string => {
     searchParams.set("sort", params.sort);
   }
 
+  if (params.priority && params.priority !== "all") {
+    searchParams.set("priority", params.priority);
+  }
+
+  if (typeof params.tag === "string" && params.tag.trim()) {
+    searchParams.set("tag", params.tag.trim());
+  }
+
   if (typeof params.page === "number" && params.page > 0) {
     searchParams.set("page", String(params.page));
   }

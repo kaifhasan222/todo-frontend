@@ -8,6 +8,13 @@
     linear-gradient(160deg, #eef4f8 0%, #f8fbfd 52%, #edf2f7 100%);
 }
 
+.themeDock {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+}
+
 .gridBackdrop {
   position: absolute;
   inset: 0;
@@ -39,6 +46,56 @@
   background: rgba(255, 255, 255, 0.74);
   backdrop-filter: blur(1rem);
   box-shadow: 0 1.75rem 4.5rem rgba(23, 32, 42, 0.12);
+}
+
+:global(:root[data-theme="dark"]) .page {
+  background:
+    radial-gradient(circle at top left, rgba(79, 180, 214, 0.16), transparent 32%),
+    radial-gradient(circle at 85% 15%, rgba(98, 211, 148, 0.12), transparent 24%),
+    linear-gradient(160deg, #0d1418 0%, #111d23 52%, #0b1216 100%);
+}
+
+:global(:root[data-theme="dark"]) .loadingPage {
+  background:
+    radial-gradient(circle at top left, rgba(79, 180, 214, 0.16), transparent 32%),
+    linear-gradient(160deg, #0d1418 0%, #111d23 52%, #0b1216 100%);
+}
+
+:global(:root[data-theme="dark"]) .gridBackdrop {
+  background-image:
+    linear-gradient(rgba(237, 245, 248, 0.05) 0.0625rem, transparent 0.0625rem),
+    linear-gradient(90deg, rgba(237, 245, 248, 0.05) 0.0625rem, transparent 0.0625rem);
+}
+
+:global(:root[data-theme="dark"]) .hero,
+:global(:root[data-theme="dark"]) .card,
+:global(:root[data-theme="dark"]) .loadingCard {
+  border-color: rgba(45, 65, 76, 0.9);
+  background: rgba(19, 32, 39, 0.82);
+  box-shadow: 0 1.75rem 4.5rem rgba(0, 0, 0, 0.34);
+}
+
+:global(:root[data-theme="dark"]) .hero h1,
+:global(:root[data-theme="dark"]) .cardHeader h2,
+:global(:root[data-theme="dark"]) .loadingCard {
+  color: var(--color-text);
+}
+
+:global(:root[data-theme="dark"]) .statCard,
+:global(:root[data-theme="dark"]) .tabActive {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+:global(:root[data-theme="dark"]) .featureList,
+:global(:root[data-theme="dark"]) .fieldLabel {
+  color: var(--color-text);
+}
+
+:global(:root[data-theme="dark"]) .modeTabs,
+:global(:root[data-theme="dark"]) .iconButton {
+  background: var(--color-surface-soft);
 }
 
 .hero {
@@ -372,6 +429,17 @@
 }
 
 @media (max-width: 34rem) {
+  .themeDock {
+    position: relative;
+    top: auto;
+    right: auto;
+    display: flex;
+    justify-content: flex-end;
+    width: min(42rem, calc(100% - 1rem));
+    margin: 0 auto;
+    padding-top: 1rem;
+  }
+
   .modeTabs {
     grid-template-columns: minmax(0, 1fr);
   }

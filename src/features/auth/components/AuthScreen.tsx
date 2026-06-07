@@ -3,6 +3,7 @@
 import { CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import type { AuthMode } from "../types/auth";
 import { AuthForm } from "./AuthForm";
 import styles from "../styles/AuthShell.module.css";
@@ -34,6 +35,9 @@ export function AuthScreen() {
   return (
     <main className={styles.page}>
       <div className={styles.gridBackdrop} aria-hidden="true" />
+      <div className={styles.themeDock}>
+        <ThemeToggle />
+      </div>
       <section className={styles.shell}>
         <aside className={styles.hero}>
           <div className={styles.heroBadge}>
@@ -54,8 +58,8 @@ export function AuthScreen() {
           </div>
           <ul className={styles.featureList}>
             <li>Register, login, logout, and session restore.</li>
-            <li>Inline validation with clear field-by-field feedback.</li>
-            <li>Todo dashboard stays protected until you sign in.</li>
+            <li>PostgreSQL-backed todos with due dates, priority, and tags.</li>
+            <li>Search, filter, sort, pagination, and protected user data.</li>
           </ul>
         </aside>
 

@@ -23,3 +23,18 @@
   --space-8: 2rem;
   --space-10: 2.5rem;
 }
+
+:root[data-theme="dark"] {
+  --color-page: #0d1418;
+  --color-surface: #132027;
+  --color-surface-soft: #1b2b34;
+  --color-text: #edf5f8;
+  --color-muted: #a6b5be;
+  --color-border: #2d414c;
+  --color-accent: #4fb4d6;
+  --color-accent-strong: #8bd5ee;
+  --color-success: #62d394;
+  --color-danger: #ff8177;
+  --color-warning: #f2b35f;
+  --shadow-panel: 0 1.25rem 3rem rgba(0, 0, 0, 0.34);
+}
