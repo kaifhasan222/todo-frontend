@@ -2,16 +2,19 @@ import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 
 export class ApiRequestError extends Error {
   status: number;
+  code?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = "ApiRequestError";
     this.status = status;
+    this.code = code;
   }
 }
 
 interface ErrorPayload {
   message?: string;
+  code?: string;
 }
 
 type AuthMode = "required" | "none";
@@ -120,6 +123,7 @@ export const requestJson = async <T>(
       throw new ApiRequestError(
         body?.message ?? "Session expired. Please sign in again.",
         response.status,
+        body?.code,
       );
     }
   }
@@ -131,5 +135,6 @@ export const requestJson = async <T>(
   throw new ApiRequestError(
     body?.message ?? "Request failed. Please try again.",
     response.status,
+    body?.code,
   );
 };

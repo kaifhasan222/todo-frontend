@@ -3,6 +3,8 @@ export interface PublicUser {
   name: string;
   email: string;
   role: "ADMIN" | "USER";
+  is_email_verified: boolean;
+  email_verified_at: string | null;
 }
 
 export type AuthMode = "login" | "register";
@@ -22,6 +24,10 @@ export interface AuthSuccessResponse {
   accessToken: string;
 }
 
+export interface RegisterResponse {
+  message: string;
+}
+
 export interface RefreshTokenResponse {
   accessToken: string;
 }
@@ -29,3 +35,9 @@ export interface RefreshTokenResponse {
 export interface SessionResponse {
   user: PublicUser;
 }
+
+export interface ResendVerificationInput {
+  email: string;
+}
+
+export type VerifyEmailResponse = AuthSuccessResponse;

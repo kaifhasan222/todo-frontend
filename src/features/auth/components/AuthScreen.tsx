@@ -28,8 +28,12 @@ const MODE_COPY: Record<
   },
 };
 
-export function AuthScreen() {
-  const [mode, setMode] = useState<AuthMode>("login");
+interface AuthScreenProps {
+  initialMode?: AuthMode;
+}
+
+export function AuthScreen({ initialMode = "login" }: AuthScreenProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const copy = MODE_COPY[mode];
 
   return (

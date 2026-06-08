@@ -4,8 +4,11 @@ import type {
   AuthSuccessResponse,
   LoginInput,
   RefreshTokenResponse,
+  RegisterResponse,
   RegisterInput,
+  ResendVerificationInput,
   SessionResponse,
+  VerifyEmailResponse,
 } from "../types/auth";
 
 const API_BASE_URL =
@@ -31,8 +34,29 @@ export const authApi = {
       body: JSON.stringify(input),
     }),
 
-  register: async (input: RegisterInput): Promise<AuthSuccessResponse> =>
-    requestJson<AuthSuccessResponse>(`${AUTH_ENDPOINT}/register`, {
+  register: async (input: RegisterInput): Promise<RegisterResponse> =>
+    requestJson<RegisterResponse>(`${AUTH_ENDPOINT}/register`, {
+      auth: "none",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    }),
+
+  verifyEmail: async (token: string): Promise<VerifyEmailResponse> =>
+    requestJson<VerifyEmailResponse>(
+      `${AUTH_ENDPOINT}/verify-email?token=${encodeURIComponent(token)}`,
+      {
+        auth: "none",
+        method: "GET",
+      },
+    ),
+
+  resendVerificationEmail: async (
+    input: ResendVerificationInput,
+  ): Promise<RegisterResponse> =>
+    requestJson<RegisterResponse>(`${AUTH_ENDPOINT}/resend-verification-email`, {
       auth: "none",
       method: "POST",
       headers: {

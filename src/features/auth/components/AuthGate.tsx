@@ -13,9 +13,10 @@ import styles from "../styles/AuthShell.module.css";
 
 interface AuthGateProps {
   view?: "user" | "admin";
+  initialMode?: "login" | "register";
 }
 
-export function AuthGate({ view = "user" }: AuthGateProps) {
+export function AuthGate({ view = "user", initialMode = "login" }: AuthGateProps) {
   useAuthSession();
   const router = useRouter();
   const status = useAuthSessionStore((state) => state.status);
@@ -88,5 +89,5 @@ export function AuthGate({ view = "user" }: AuthGateProps) {
     return <TodoApp />;
   }
 
-  return <AuthScreen />;
+  return <AuthScreen initialMode={initialMode} />;
 }

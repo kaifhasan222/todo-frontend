@@ -3,10 +3,12 @@
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { getErrorMessage } from "@/shared/utils/getErrorMessage";
 import { ApiRequestError } from "@/shared/utils/requestJson";
 
+import { authApi } from "../api/authApi";
 import { useLoginMutation, useRegisterMutation } from "../hooks/useAuth";
 import {
   type AuthErrors,
@@ -33,6 +35,10 @@ const getFriendlyAuthError = (error: unknown, mode: AuthMode): string => {
       return "Invalid email or password.";
     }
 
+    if (error.status === 403 && error.code === "EMAIL_NOT_VERIFIED") {
+      return "Please verify your email before signing in.";
+    }
+
     if (error.status === 404 && mode === "login") {
       return "We could not find an account with that email.";
     }
@@ -54,6 +60,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const registerMutation = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState<AuthValues>(initialValues);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [isResending, setIsResending] = useState(false);
   const {
     errors,
     validate,
@@ -66,6 +75,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   useEffect(() => {
     setValues(initialValues);
     setShowPassword(false);
+    setSuccessMessage("");
+    setVerificationEmail("");
     clearAllErrors();
   }, [clearAllErrors, mode]);
 
@@ -83,8 +94,32 @@ export function AuthForm({ mode }: AuthFormProps) {
       clearFormError();
     }
 
+    if (successMessage) {
+      setSuccessMessage("");
+    }
+
     if (field === "password" && mode === "register" && errors.confirmPassword) {
       clearFieldError("confirmPassword");
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!verificationEmail || isResending) {
+      return;
+    }
+
+    setIsResending(true);
+
+    try {
+      const response = await authApi.resendVerificationEmail({
+        email: verificationEmail,
+      });
+      setSuccessMessage(response.message);
+      toast.success(response.message);
+    } catch (error) {
+      setFormError(getFriendlyAuthError(error, "login"));
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -102,13 +137,29 @@ export function AuthForm({ mode }: AuthFormProps) {
           password: values.password,
         });
       } else {
-        await registerMutation.mutateAsync({
+        const response = await registerMutation.mutateAsync({
           name: values.name.trim(),
           email: values.email.trim(),
           password: values.password,
         });
+        setSuccessMessage(response.message);
+        setVerificationEmail(values.email.trim());
+        setValues((current) => ({
+          ...current,
+          password: "",
+          confirmPassword: "",
+        }));
       }
     } catch (error) {
+      if (
+        mode === "login" &&
+        error instanceof ApiRequestError &&
+        error.status === 403 &&
+        error.code === "EMAIL_NOT_VERIFIED"
+      ) {
+        setVerificationEmail(values.email.trim());
+      }
+
       setFormError(getFriendlyAuthError(error, mode));
       return;
     }
@@ -126,6 +177,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <p className={styles.formLead}>{helperText}</p>
 
       {errors.form ? <div className={styles.formError}>{errors.form}</div> : null}
+      {successMessage ? <div className={styles.formSuccess}>{successMessage}</div> : null}
 
       {mode === "register" ? (
         <Field
@@ -201,6 +253,30 @@ export function AuthForm({ mode }: AuthFormProps) {
           Password must include at least 8 characters, upper and lowercase
           letters, a number, and a special character.
         </p>
+      ) : null}
+
+      {verificationEmail ? (
+        <div className={styles.infoCard}>
+          <p className={styles.infoTitle}>Need another verification email?</p>
+          <p className={styles.infoText}>
+            We can resend the link to <strong>{verificationEmail}</strong>.
+          </p>
+          <button
+            className={styles.secondaryButton}
+            disabled={isResending}
+            type="button"
+            onClick={handleResendVerification}
+          >
+            {isResending ? (
+              <>
+                <Loader2 className={styles.spinner} size="1rem" />
+                Sending email
+              </>
+            ) : (
+              "Resend verification email"
+            )}
+          </button>
+        </div>
       ) : null}
 
       <button className={styles.submitButton} disabled={isSubmitting} type="submit">

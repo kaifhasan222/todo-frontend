@@ -71,17 +71,10 @@ export function useLoginMutation() {
 }
 
 export function useRegisterMutation() {
-  const queryClient = useQueryClient();
-  const setAuthenticated = useAuthSessionStore(
-    (state) => state.setAuthenticated,
-  );
-
   return useMutation({
     mutationFn: (input: RegisterInput) => authApi.register(input),
     onSuccess: async (data) => {
-      setAuthenticated(data.user, data.accessToken);
-      queryClient.setQueryData(AUTH_SESSION_KEY, { user: data.user });
-      toast.success("Account created");
+      toast.success(data.message);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
