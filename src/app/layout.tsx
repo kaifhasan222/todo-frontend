@@ -8,6 +8,11 @@ import "@/styles/globals.css";
 export const metadata: Metadata = {
   title: "Task Vault",
   description: "Protected todo workspace with rotating access and refresh authentication.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
