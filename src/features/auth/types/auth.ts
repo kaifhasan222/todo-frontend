@@ -18,6 +18,11 @@ export interface RegisterInput extends LoginInput {
 export interface AuthSuccessResponse {
   message: string;
   user: PublicUser;
+  accessToken: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
 }
 
 export interface SessionResponse {

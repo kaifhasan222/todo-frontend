@@ -55,6 +55,7 @@ const buildTodosUrl = (params?: TodoQueryParams): string => {
 export const todoApi = {
   getTodos: async (params?: TodoQueryParams): Promise<TodoListResponse> => {
     return requestJson<TodoListResponse>(buildTodosUrl(params), {
+      auth: "required",
       method: "GET",
       cache: "no-store",
     });
@@ -62,6 +63,7 @@ export const todoApi = {
 
   createTodo: async (input: CreateTodoInput): Promise<Todo> => {
     return requestJson<Todo>(TODOS_ENDPOINT, {
+      auth: "required",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,6 +74,7 @@ export const todoApi = {
 
   updateTodo: async (id: number, input: UpdateTodoInput): Promise<Todo> => {
     return requestJson<Todo>(`${TODOS_ENDPOINT}/${id}`, {
+      auth: "required",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -82,6 +85,7 @@ export const todoApi = {
 
   deleteTodo: async (id: number): Promise<{ message: string }> => {
     return requestJson<{ message: string }>(`${TODOS_ENDPOINT}/${id}`, {
+      auth: "required",
       method: "DELETE",
     });
   },

@@ -17,7 +17,7 @@ export function AuthGate() {
       <main className={styles.loadingPage}>
         <div className={styles.loadingCard}>
           <Loader2 className={styles.spinnerLarge} size="1.5rem" />
-          <p>Checking your secure session...</p>
+          <p>Refreshing your secure session...</p>
         </div>
       </main>
     );

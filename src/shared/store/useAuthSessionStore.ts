@@ -7,15 +7,22 @@ export type AuthSessionStatus = "loading" | "authenticated" | "unauthenticated";
 interface AuthSessionState {
   status: AuthSessionStatus;
   user: PublicUser | null;
+  accessToken: string | null;
   setLoading: () => void;
-  setAuthenticated: (user: PublicUser) => void;
+  setAuthenticated: (user: PublicUser, accessToken: string) => void;
+  setAccessToken: (accessToken: string) => void;
   setUnauthenticated: () => void;
 }
 
 export const useAuthSessionStore = create<AuthSessionState>((set) => ({
   status: "loading",
   user: null,
-  setLoading: () => set({ status: "loading", user: null }),
-  setAuthenticated: (user) => set({ status: "authenticated", user }),
-  setUnauthenticated: () => set({ status: "unauthenticated", user: null }),
+  accessToken: null,
+  setLoading: () => set((state) => ({ status: "loading", user: state.user, accessToken: state.accessToken })),
+  setAuthenticated: (user, accessToken) =>
+    set({ status: "authenticated", user, accessToken }),
+  setAccessToken: (accessToken) =>
+    set((state) => ({ ...state, accessToken })),
+  setUnauthenticated: () =>
+    set({ status: "unauthenticated", user: null, accessToken: null }),
 }));

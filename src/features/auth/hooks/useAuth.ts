@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/shared/utils/getErrorMessage";
@@ -20,35 +20,33 @@ export function useAuthSession() {
   const setUnauthenticated = useAuthSessionStore(
     (state) => state.setUnauthenticated,
   );
+  const queryClient = useQueryClient();
+  const hasStarted = useRef(false);
 
   useEffect(() => {
-    setLoading();
-  }, [setLoading]);
-
-  const sessionQuery = useQuery({
-    queryKey: AUTH_SESSION_KEY,
-    queryFn: authApi.getSession,
-    retry: false,
-    refetchOnWindowFocus: false,
-    staleTime: 60_000,
-  });
-
-  useEffect(() => {
-    if (sessionQuery.isSuccess && sessionQuery.data) {
-      setAuthenticated(sessionQuery.data.user);
+    if (hasStarted.current) {
       return;
     }
 
-    if (sessionQuery.isError) {
-      setUnauthenticated();
-    }
-  }, [
-    sessionQuery.data,
-    sessionQuery.isError,
-    sessionQuery.isSuccess,
-    setAuthenticated,
-    setUnauthenticated,
-  ]);
+    hasStarted.current = true;
+
+    const restoreSession = async () => {
+      setLoading();
+
+      try {
+        const refreshResponse = await authApi.refresh();
+        const session = await authApi.getSession();
+
+        setAuthenticated(session.user, refreshResponse.accessToken);
+        queryClient.setQueryData(AUTH_SESSION_KEY, session);
+      } catch {
+        setUnauthenticated();
+        queryClient.removeQueries({ queryKey: AUTH_SESSION_KEY });
+      }
+    };
+
+    void restoreSession();
+  }, [queryClient, setAuthenticated, setLoading, setUnauthenticated]);
 
   return null;
 }
@@ -62,8 +60,8 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: (input: LoginInput) => authApi.login(input),
     onSuccess: async (data) => {
-      setAuthenticated(data.user);
-      await queryClient.invalidateQueries({ queryKey: AUTH_SESSION_KEY });
+      setAuthenticated(data.user, data.accessToken);
+      queryClient.setQueryData(AUTH_SESSION_KEY, { user: data.user });
       toast.success("Welcome back");
     },
     onError: (error) => {
@@ -81,8 +79,8 @@ export function useRegisterMutation() {
   return useMutation({
     mutationFn: (input: RegisterInput) => authApi.register(input),
     onSuccess: async (data) => {
-      setAuthenticated(data.user);
-      await queryClient.invalidateQueries({ queryKey: AUTH_SESSION_KEY });
+      setAuthenticated(data.user, data.accessToken);
+      queryClient.setQueryData(AUTH_SESSION_KEY, { user: data.user });
       toast.success("Account created");
     },
     onError: (error) => {

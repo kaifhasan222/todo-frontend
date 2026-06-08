@@ -42,7 +42,7 @@ export function AuthScreen() {
         <aside className={styles.hero}>
           <div className={styles.heroBadge}>
             <ShieldCheck size="0.95rem" aria-hidden="true" />
-            Secure cookie session
+            Secure refresh session
           </div>
           <h1>{copy.title}</h1>
           <p>{copy.subtitle}</p>
@@ -82,7 +82,7 @@ export function AuthScreen() {
           <div className={styles.cardHeader}>
             <span className={styles.cardKicker}>Task Vault</span>
             <h2>{copy.cta}</h2>
-            <p>Fast, friendly authentication with protected session cookies.</p>
+            <p>Fast, friendly authentication with rotating access and refresh tokens.</p>
           </div>
 
           <AuthForm mode={mode} />
