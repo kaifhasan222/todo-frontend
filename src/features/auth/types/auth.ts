@@ -2,6 +2,7 @@ export interface PublicUser {
   id: number;
   name: string;
   email: string;
+  role: "ADMIN" | "USER";
 }
 
 export type AuthMode = "login" | "register";
