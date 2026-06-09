@@ -1,14 +1,20 @@
 import { requestJson } from "@/shared/utils/requestJson";
 
 import type {
+  AuthMessageResponse,
   AuthSuccessResponse,
+  ForgotPasswordInput,
   LoginInput,
+  LoginResponse,
   RefreshTokenResponse,
   RegisterResponse,
   RegisterInput,
   ResendVerificationInput,
+  ResetPasswordInput,
   SessionResponse,
   VerifyEmailResponse,
+  VerifyOtpInput,
+  VerifyOtpResponse,
 } from "../types/auth";
 
 const API_BASE_URL =
@@ -24,8 +30,8 @@ export const authApi = {
       cache: "no-store",
     }),
 
-  login: async (input: LoginInput): Promise<AuthSuccessResponse> =>
-    requestJson<AuthSuccessResponse>(`${AUTH_ENDPOINT}/login`, {
+  login: async (input: LoginInput): Promise<LoginResponse> =>
+    requestJson<LoginResponse>(`${AUTH_ENDPOINT}/login`, {
       auth: "none",
       method: "POST",
       headers: {
@@ -53,10 +59,44 @@ export const authApi = {
       },
     ),
 
+  verifyOtp: async (input: VerifyOtpInput): Promise<VerifyOtpResponse> =>
+    requestJson<VerifyOtpResponse>(`${AUTH_ENDPOINT}/verify-otp`, {
+      auth: "none",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    }),
+
   resendVerificationEmail: async (
     input: ResendVerificationInput,
   ): Promise<RegisterResponse> =>
     requestJson<RegisterResponse>(`${AUTH_ENDPOINT}/resend-verification-email`, {
+      auth: "none",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    }),
+
+  forgotPassword: async (
+    input: ForgotPasswordInput,
+  ): Promise<AuthMessageResponse> =>
+    requestJson<AuthMessageResponse>(`${AUTH_ENDPOINT}/forgot-password`, {
+      auth: "none",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    }),
+
+  resetPassword: async (
+    input: ResetPasswordInput,
+  ): Promise<AuthSuccessResponse> =>
+    requestJson<AuthSuccessResponse>(`${AUTH_ENDPOINT}/reset-password`, {
       auth: "none",
       method: "POST",
       headers: {

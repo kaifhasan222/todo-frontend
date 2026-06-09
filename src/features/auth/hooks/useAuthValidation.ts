@@ -41,7 +41,7 @@ const validateName = (name: string): string => {
   return "";
 };
 
-const validateEmail = (email: string): string => {
+export const validateEmail = (email: string): string => {
   const value = email.trim();
 
   if (!value) {
@@ -57,7 +57,7 @@ const validateEmail = (email: string): string => {
   return "";
 };
 
-const validatePassword = (password: string): string => {
+export const validatePassword = (password: string): string => {
   if (!password) {
     return "Password is required";
   }

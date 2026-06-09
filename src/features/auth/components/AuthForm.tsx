@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, RefreshCw, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -9,13 +11,13 @@ import { getErrorMessage } from "@/shared/utils/getErrorMessage";
 import { ApiRequestError } from "@/shared/utils/requestJson";
 
 import { authApi } from "../api/authApi";
-import { useLoginMutation, useRegisterMutation } from "../hooks/useAuth";
+import { useLoginMutation, useRegisterMutation, useVerifyOtpMutation } from "../hooks/useAuth";
 import {
   type AuthErrors,
   type AuthValues,
   useAuthValidation,
 } from "../hooks/useAuthValidation";
-import type { AuthMode, AuthSuccessResponse, RegisterResponse } from "../types/auth";
+import type { AuthMode, AuthSuccessResponse, LoginResponse, OtpPurpose, RegisterResponse } from "../types/auth";
 import styles from "../styles/AuthShell.module.css";
 
 interface AuthFormProps {
@@ -60,11 +62,32 @@ const isAuthenticatedRegisterResponse = (
 ): response is AuthSuccessResponse =>
   "user" in response && "accessToken" in response;
 
+const isAuthenticatedLoginResponse = (
+  response: LoginResponse,
+): response is AuthSuccessResponse =>
+  "user" in response && "accessToken" in response;
+
+const isOtpRequiredResponse = (
+  response: LoginResponse | RegisterResponse,
+): response is { message: string; code?: string; email: string } =>
+  "email" in response && typeof response.email === "string";
+
+interface PendingOtp {
+  email: string;
+  purpose: Exclude<OtpPurpose, "PASSWORD_RESET">;
+  values: AuthValues;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
+  const router = useRouter();
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
+  const verifyOtpMutation = useVerifyOtpMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState<AuthValues>(initialValues);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [pendingOtp, setPendingOtp] = useState<PendingOtp | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [verificationEmail, setVerificationEmail] = useState("");
   const [isResending, setIsResending] = useState(false);
@@ -80,6 +103,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   useEffect(() => {
     setValues(initialValues);
     setShowPassword(false);
+    setOtp("");
+    setOtpError("");
+    setPendingOtp(null);
     setSuccessMessage("");
     setVerificationEmail("");
     clearAllErrors();
@@ -137,25 +163,49 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === "login") {
-        await loginMutation.mutateAsync({
+        const response = await loginMutation.mutateAsync({
           email: values.email.trim(),
           password: values.password,
         });
+
+        if (isAuthenticatedLoginResponse(response)) {
+          router.replace(response.user.role === "ADMIN" ? "/admin" : "/");
+          return;
+        }
+
+        if (isOtpRequiredResponse(response)) {
+          setPendingOtp({
+            email: response.email,
+            purpose: "LOGIN",
+            values: { ...values, email: values.email.trim() },
+          });
+          setSuccessMessage(response.message);
+          setOtp("");
+          return;
+        }
       } else {
         const response = await registerMutation.mutateAsync({
           name: values.name.trim(),
           email: values.email.trim(),
           password: values.password,
         });
+
+        if (isAuthenticatedRegisterResponse(response)) {
+          router.replace(response.user.role === "ADMIN" ? "/admin" : "/");
+          return;
+        }
+
         setSuccessMessage(response.message);
-        setVerificationEmail(
-          isAuthenticatedRegisterResponse(response) ? "" : values.email.trim(),
-        );
-        setValues((current) => ({
-          ...current,
-          password: "",
-          confirmPassword: "",
-        }));
+        setVerificationEmail(response.email ?? values.email.trim());
+
+        if (isOtpRequiredResponse(response)) {
+          setPendingOtp({
+            email: response.email,
+            purpose: "REGISTER",
+            values: { ...values, email: values.email.trim(), name: values.name.trim() },
+          });
+          setOtp("");
+        }
       }
     } catch (error) {
       if (
@@ -172,12 +222,136 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
+  const handleVerifyOtp = async () => {
+    if (!pendingOtp) {
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp.trim())) {
+      setOtpError("Enter the 6-digit OTP");
+      return;
+    }
+
+    setOtpError("");
+
+    try {
+      const response = await verifyOtpMutation.mutateAsync({
+        email: pendingOtp.email,
+        otp: otp.trim(),
+        purpose: pendingOtp.purpose,
+      });
+      router.replace(response.user.role === "ADMIN" ? "/admin" : "/");
+    } catch (error) {
+      setFormError(getFriendlyAuthError(error, mode));
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!pendingOtp) {
+      return;
+    }
+
+    setOtp("");
+    setOtpError("");
+    clearFormError();
+
+    try {
+      if (pendingOtp.purpose === "LOGIN") {
+        const response = await loginMutation.mutateAsync({
+          email: pendingOtp.values.email,
+          password: pendingOtp.values.password,
+        });
+        setSuccessMessage(response.message);
+      } else {
+        const response = await registerMutation.mutateAsync({
+          name: pendingOtp.values.name,
+          email: pendingOtp.values.email,
+          password: pendingOtp.values.password,
+        });
+        setSuccessMessage(response.message);
+      }
+    } catch (error) {
+      setFormError(getFriendlyAuthError(error, mode));
+    }
+  };
+
   const isSubmitting =
     mode === "login" ? loginMutation.isPending : registerMutation.isPending;
+  const isOtpSubmitting = verifyOtpMutation.isPending;
   const helperText =
     mode === "login"
       ? "Use your registered email and password to continue."
       : "Create your account with a strong password and keep your tasks protected.";
+
+  if (pendingOtp) {
+    return (
+      <div className={styles.form}>
+        <p className={styles.formLead}>
+          Enter the 6-digit code sent to <strong>{pendingOtp.email}</strong>.
+        </p>
+
+        {errors.form ? <div className={styles.formError}>{errors.form}</div> : null}
+        {successMessage ? <div className={styles.formSuccess}>{successMessage}</div> : null}
+
+        <Field
+          autoComplete="one-time-code"
+          icon={<Lock size="1rem" aria-hidden="true" />}
+          id={`auth-${pendingOtp.purpose.toLowerCase()}-otp`}
+          label="6-digit OTP"
+          placeholder="123456"
+          value={otp}
+          error={otpError}
+          disabled={isOtpSubmitting}
+          inputMode="numeric"
+          maxLength={6}
+          onChange={(value) => {
+            setOtp(value.replace(/\D/g, "").slice(0, 6));
+            setOtpError("");
+            clearFormError();
+          }}
+        />
+
+        <button
+          className={styles.submitButton}
+          disabled={isOtpSubmitting}
+          type="button"
+          onClick={handleVerifyOtp}
+        >
+          {isOtpSubmitting ? <Loader2 className={styles.spinner} size="1rem" /> : null}
+          <span>{isOtpSubmitting ? "Verifying code" : "Verify code"}</span>
+          {!isOtpSubmitting ? <ArrowRight size="1rem" aria-hidden="true" /> : null}
+        </button>
+
+        <button
+          className={styles.secondaryButton}
+          disabled={isSubmitting || isOtpSubmitting}
+          type="button"
+          onClick={handleResendOtp}
+        >
+          {isSubmitting ? (
+            <Loader2 className={styles.spinner} size="1rem" />
+          ) : (
+            <RefreshCw size="1rem" aria-hidden="true" />
+          )}
+          {isSubmitting ? "Sending code" : "Resend code"}
+        </button>
+
+        <button
+          className={styles.textButton}
+          type="button"
+          onClick={() => {
+            setPendingOtp(null);
+            setOtp("");
+            setOtpError("");
+            setSuccessMessage("");
+            clearAllErrors();
+          }}
+        >
+          Use a different email
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -239,6 +413,14 @@ export function AuthForm({ mode }: AuthFormProps) {
           </button>
         }
       />
+
+      {mode === "login" ? (
+        <div className={styles.formLinkRow}>
+          <Link className={styles.textLink} href="/forgot-password">
+            Forgot password?
+          </Link>
+        </div>
+      ) : null}
 
       {mode === "register" ? (
         <Field
@@ -315,6 +497,8 @@ interface FieldProps {
   autoComplete?: string;
   onChange: (value: string) => void;
   trailingAction?: ReactNode;
+  inputMode?: "text" | "email" | "numeric" | "tel" | "url" | "search" | "none" | "decimal";
+  maxLength?: number;
 }
 
 function Field({
@@ -329,6 +513,8 @@ function Field({
   autoComplete,
   onChange,
   trailingAction,
+  inputMode,
+  maxLength,
 }: FieldProps) {
   return (
     <label className={styles.field} htmlFor={id}>
@@ -346,6 +532,8 @@ function Field({
           className={styles.input}
           disabled={disabled}
           id={id}
+          inputMode={inputMode}
+          maxLength={maxLength}
           placeholder={placeholder}
           type={type}
           value={value}
