@@ -31,6 +31,7 @@ const formatJoinedDate = (value: string | null): string => {
 
 export function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const router = useRouter();
   const sessionUser = useAuthSessionStore((state) => state.user);
   const setUnauthenticated = useAuthSessionStore(
@@ -114,7 +115,7 @@ export function AdminDashboard() {
               className={styles.logoutButton}
               disabled={logoutMutation.isPending}
               type="button"
-              onClick={() => logoutMutation.mutate()}
+              onClick={() => setIsLogoutModalOpen(true)}
             >
               Logout
             </button>
@@ -271,6 +272,38 @@ export function AdminDashboard() {
             </div>
           </div>
         ) : null}
+      </Modal>
+
+      <Modal
+        description="Your current admin session will be closed."
+        isOpen={isLogoutModalOpen}
+        title="Logout"
+        onClose={() => setIsLogoutModalOpen(false)}
+      >
+        <div className={styles.modalBody}>
+          <p className={styles.confirmText}>Are you sure you want to logout?</p>
+          <div className={styles.confirmActions}>
+            <button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() => setIsLogoutModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className={styles.confirmDeleteButton}
+              disabled={logoutMutation.isPending}
+              type="button"
+              onClick={() =>
+                logoutMutation.mutate(undefined, {
+                  onSuccess: () => setIsLogoutModalOpen(false),
+                })
+              }
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       </Modal>
     </main>
   );

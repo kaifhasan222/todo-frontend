@@ -1,5 +1,6 @@
 export type TodoPriority = "low" | "medium" | "high";
 export type TodoStatus = "all" | "active" | "completed";
+export type TodoView = "active" | "trash";
 export type TodoSort =
   | "newest"
   | "oldest"
@@ -19,6 +20,7 @@ export interface Todo {
   priority: TodoPriority;
   tags: string[];
   created_at: string;
+  deleted_at: string | null;
 }
 
 export interface TodoSummary {
@@ -63,6 +65,7 @@ export interface TodoQueryParams {
   sort?: TodoSort;
   priority?: TodoPriority | "all";
   tag?: string;
+  view?: TodoView;
   page?: number;
   limit?: number;
 }

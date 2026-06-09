@@ -12,6 +12,8 @@ import { useLogoutMutation } from "@/features/auth/hooks/useAuth";
 import {
   useCreateTodoMutation,
   useDeleteTodoMutation,
+  usePermanentlyDeleteTodoMutation,
+  useRestoreTodoMutation,
   useTodosQuery,
   useUpdateTodoMutation,
 } from "../hooks/useTodos";
@@ -45,6 +47,11 @@ const PRIORITY_OPTIONS = [
   { label: "Low", value: "low" },
 ] as const;
 
+const VIEW_OPTIONS = [
+  { label: "Todos", value: "active" },
+  { label: "Trash", value: "trash" },
+] as const;
+
 const TODO_PAGE_SIZE = 8;
 
 const EMPTY_SUMMARY = {
@@ -62,6 +69,7 @@ export function TodoApp() {
     sort,
     priorityFilter,
     tagFilter,
+    view,
     modal,
     selectedTodo,
     closeModal,
@@ -71,9 +79,11 @@ export function TodoApp() {
     setSort,
     setPriorityFilter,
     setTagFilter,
+    setView,
   } =
     useTodoUiStore();
   const [page, setPage] = useState(1);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const debouncedSearch = useDebouncedValue(search, 350);
   const debouncedTag = useDebouncedValue(tagFilter, 350);
   const user = useAuthSessionStore((state) => state.user);
@@ -81,12 +91,15 @@ export function TodoApp() {
   const createTodo = useCreateTodoMutation();
   const updateTodo = useUpdateTodoMutation();
   const deleteTodo = useDeleteTodoMutation();
+  const restoreTodo = useRestoreTodoMutation();
+  const permanentlyDeleteTodo = usePermanentlyDeleteTodoMutation();
   const listQuery = useTodosQuery({
     search: debouncedSearch,
     status: filter,
     sort,
     priority: priorityFilter,
     tag: debouncedTag,
+    view,
     page,
     limit: TODO_PAGE_SIZE,
   });
@@ -101,7 +114,7 @@ export function TodoApp() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, debouncedTag, filter, priorityFilter, sort]);
+  }, [debouncedSearch, debouncedTag, filter, priorityFilter, sort, view]);
 
   useEffect(() => {
     const totalPages = pagination?.totalPages ?? 0;
@@ -147,7 +160,7 @@ export function TodoApp() {
               className={styles.logoutButton}
               disabled={logoutMutation.isPending}
               type="button"
-              onClick={() => logoutMutation.mutate()}
+              onClick={() => setIsLogoutModalOpen(true)}
             >
               Logout
             </button>
@@ -174,14 +187,34 @@ export function TodoApp() {
         </section>
 
         <section className={styles.panel}>
-          <TodoForm
-            isSubmitting={createTodo.isPending}
-            onSubmit={(input) =>
-              createTodo.mutate(input, {
-                onSuccess: () => setPage(1),
-              })
-            }
-          />
+          <div className={styles.viewBar}>
+            <div className={styles.segmented} aria-label="Todo view">
+              {VIEW_OPTIONS.map((option) => (
+                <button
+                  aria-pressed={view === option.value}
+                  className={
+                    view === option.value ? styles.segmentActive : styles.segment
+                  }
+                  key={option.value}
+                  type="button"
+                  onClick={() => setView(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {view === "active" ? (
+            <TodoForm
+              isSubmitting={createTodo.isPending}
+              onSubmit={(input) =>
+                createTodo.mutate(input, {
+                  onSuccess: () => setPage(1),
+                })
+              }
+            />
+          ) : null}
 
           <div className={styles.toolbar}>
             <div className={styles.search}>
@@ -264,15 +297,25 @@ export function TodoApp() {
           ) : null}
 
           {!isLoading && !isError && todos.length === 0 ? (
-            <div className={styles.state}>No todos match this view.</div>
+            <div className={styles.state}>
+              {view === "trash" ? "Trash is empty." : "No todos match this view."}
+            </div>
           ) : null}
 
           {!isLoading && !isError && todos.length > 0 ? (
             <TodoTable
-              isActionPending={updateTodo.isPending || deleteTodo.isPending}
+              isActionPending={
+                updateTodo.isPending ||
+                deleteTodo.isPending ||
+                restoreTodo.isPending ||
+                permanentlyDeleteTodo.isPending
+              }
               todos={todos}
+              view={view}
               onDelete={(item) => openModal("delete", item)}
               onEdit={(item) => openModal("edit", item)}
+              onPermanentDelete={(item) => openModal("permanentDelete", item)}
+              onRestore={(item) => restoreTodo.mutate(item)}
               onToggle={(item) =>
                 updateTodo.mutate({
                   id: item.id,
@@ -325,7 +368,7 @@ export function TodoApp() {
       </Modal>
 
       <Modal
-        description="This action removes the todo from the backend list."
+        description="This action moves the todo to trash."
         isOpen={modal === "delete" && Boolean(selectedTodo)}
         title="Delete todo"
         onClose={closeModal}
@@ -352,6 +395,72 @@ export function TodoApp() {
                 }
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal
+        description="Your current session will be closed."
+        isOpen={isLogoutModalOpen}
+        title="Logout"
+        onClose={() => setIsLogoutModalOpen(false)}
+      >
+        <div className={styles.modalBody}>
+          <p className={styles.confirmText}>Are you sure you want to logout?</p>
+          <div className={styles.confirmActions}>
+            <button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() => setIsLogoutModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className={styles.deleteButton}
+              disabled={logoutMutation.isPending}
+              type="button"
+              onClick={() =>
+                logoutMutation.mutate(undefined, {
+                  onSuccess: () => setIsLogoutModalOpen(false),
+                })
+              }
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        description="This action permanently removes the todo."
+        isOpen={modal === "permanentDelete" && Boolean(selectedTodo)}
+        title="Delete forever"
+        onClose={closeModal}
+      >
+        {selectedTodo ? (
+          <div className={styles.modalBody}>
+            <p className={styles.confirmText}>{selectedTodo.title}</p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.secondaryButton}
+                type="button"
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.deleteButton}
+                disabled={permanentlyDeleteTodo.isPending}
+                type="button"
+                onClick={() =>
+                  permanentlyDeleteTodo.mutate(selectedTodo, {
+                    onSuccess: closeModal,
+                  })
+                }
+              >
+                Delete forever
               </button>
             </div>
           </div>

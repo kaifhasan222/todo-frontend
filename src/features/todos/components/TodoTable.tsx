@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Trash2 } from "lucide-react";
+import { Check, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 import { formatDueDate, isOverdue } from "../utils/filterTodos";
 import type { Todo, TodoPriority } from "../types/todo";
@@ -9,16 +9,22 @@ import styles from "../styles/TodoTable.module.css";
 interface TodoTableProps {
   todos: Todo[];
   isActionPending?: boolean;
+  view?: "active" | "trash";
   onDelete: (todo: Todo) => void;
   onEdit: (todo: Todo) => void;
+  onPermanentDelete?: (todo: Todo) => void;
+  onRestore?: (todo: Todo) => void;
   onToggle: (todo: Todo) => void;
 }
 
 export function TodoTable({
   todos,
   isActionPending = false,
+  view = "active",
   onDelete,
   onEdit,
+  onPermanentDelete,
+  onRestore,
   onToggle,
 }: TodoTableProps) {
   const priorityClass: Record<TodoPriority, string> = {
@@ -75,7 +81,7 @@ export function TodoTable({
                         ? styles.statusDone
                         : styles.statusActive
                     }
-                    disabled={isActionPending}
+                    disabled={isActionPending || view === "trash"}
                     type="button"
                     onClick={() => onToggle(todo)}
                   >
@@ -121,24 +127,49 @@ export function TodoTable({
                   )}
                 </td>
                 <td className={styles.actionsCell}>
-                  <button
-                    aria-label="Edit todo"
-                    className={styles.iconButton}
-                    disabled={isActionPending}
-                    type="button"
-                    onClick={() => onEdit(todo)}
-                  >
-                    <Pencil aria-hidden="true" size="0.95rem" />
-                  </button>
-                  <button
-                    aria-label="Delete todo"
-                    className={styles.dangerButton}
-                    disabled={isActionPending}
-                    type="button"
-                    onClick={() => onDelete(todo)}
-                  >
-                    <Trash2 aria-hidden="true" size="0.95rem" />
-                  </button>
+                  {view === "trash" ? (
+                    <>
+                      <button
+                        aria-label="Restore todo"
+                        className={styles.iconButton}
+                        disabled={isActionPending || !onRestore}
+                        type="button"
+                        onClick={() => onRestore?.(todo)}
+                      >
+                        <RotateCcw aria-hidden="true" size="0.95rem" />
+                      </button>
+                      <button
+                        aria-label="Delete todo forever"
+                        className={styles.dangerButton}
+                        disabled={isActionPending || !onPermanentDelete}
+                        type="button"
+                        onClick={() => onPermanentDelete?.(todo)}
+                      >
+                        <Trash2 aria-hidden="true" size="0.95rem" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        aria-label="Edit todo"
+                        className={styles.iconButton}
+                        disabled={isActionPending}
+                        type="button"
+                        onClick={() => onEdit(todo)}
+                      >
+                        <Pencil aria-hidden="true" size="0.95rem" />
+                      </button>
+                      <button
+                        aria-label="Delete todo"
+                        className={styles.dangerButton}
+                        disabled={isActionPending}
+                        type="button"
+                        onClick={() => onDelete(todo)}
+                      >
+                        <Trash2 aria-hidden="true" size="0.95rem" />
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             );

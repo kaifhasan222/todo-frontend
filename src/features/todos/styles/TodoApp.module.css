@@ -123,6 +123,11 @@
   box-shadow: var(--shadow-panel);
 }
 
+.viewBar {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

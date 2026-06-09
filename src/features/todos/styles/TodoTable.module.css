@@ -84,6 +84,14 @@
   font-weight: 900;
 }
 
+.statusActive:disabled,
+.statusDone:disabled,
+.iconButton:disabled,
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .statusActive {
   background: rgba(20, 108, 148, 0.08);
   color: var(--color-accent);

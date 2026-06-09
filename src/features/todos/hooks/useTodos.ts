@@ -57,7 +57,37 @@ export function useDeleteTodoMutation() {
     mutationFn: (todo: Todo) => todoApi.deleteTodo(todo.id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: TODO_QUERY_KEY });
-      toast.success("Todo deleted");
+      toast.success("Todo moved to trash");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+}
+
+export function useRestoreTodoMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (todo: Todo) => todoApi.restoreTodo(todo.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: TODO_QUERY_KEY });
+      toast.success("Todo restored");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+}
+
+export function usePermanentlyDeleteTodoMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (todo: Todo) => todoApi.permanentlyDeleteTodo(todo.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: TODO_QUERY_KEY });
+      toast.success("Todo permanently deleted");
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

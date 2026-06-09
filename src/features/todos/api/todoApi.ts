@@ -39,6 +39,10 @@ const buildTodosUrl = (params?: TodoQueryParams): string => {
     searchParams.set("tag", params.tag.trim());
   }
 
+  if (params.view && params.view !== "active") {
+    searchParams.set("view", params.view);
+  }
+
   if (typeof params.page === "number" && params.page > 0) {
     searchParams.set("page", String(params.page));
   }
@@ -85,6 +89,20 @@ export const todoApi = {
 
   deleteTodo: async (id: number): Promise<{ message: string }> => {
     return requestJson<{ message: string }>(`${TODOS_ENDPOINT}/${id}`, {
+      auth: "required",
+      method: "DELETE",
+    });
+  },
+
+  restoreTodo: async (id: number): Promise<Todo> => {
+    return requestJson<Todo>(`${TODOS_ENDPOINT}/${id}/restore`, {
+      auth: "required",
+      method: "PATCH",
+    });
+  },
+
+  permanentlyDeleteTodo: async (id: number): Promise<{ message: string }> => {
+    return requestJson<{ message: string }>(`${TODOS_ENDPOINT}/${id}/permanent`, {
       auth: "required",
       method: "DELETE",
     });
