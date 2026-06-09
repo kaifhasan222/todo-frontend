@@ -26,6 +26,7 @@ export interface AuthSuccessResponse {
 
 export interface RegisterResponse {
   message: string;
+  code?: string;
 }
 
 export interface RefreshTokenResponse {
