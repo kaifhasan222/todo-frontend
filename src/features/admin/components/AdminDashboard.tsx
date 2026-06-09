@@ -16,6 +16,7 @@ import {
   useDeleteUserMutation,
   useUpdateUserRoleMutation,
 } from "../hooks/useAdmin";
+import { AdminUsersTableSkeleton } from "./AdminUsersTableSkeleton";
 import type { AdminUser, UserRole } from "../types/admin";
 import styles from "../styles/AdminDashboard.module.css";
 
@@ -149,7 +150,7 @@ export function AdminDashboard() {
           </div>
 
           {usersQuery.isLoading ? (
-            <div className={styles.state}>Loading users...</div>
+            <AdminUsersTableSkeleton />
           ) : null}
 
           {usersQuery.isError ? (

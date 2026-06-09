@@ -4,6 +4,7 @@ import { RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Modal } from "@/shared/components/Modal";
+import { Skeleton } from "@/shared/components/Skeleton";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 import { useTodoUiStore } from "@/shared/store/useTodoUiStore";
@@ -287,6 +288,16 @@ export function TodoApp() {
               </div>
             </div>
           </div>
+
+          {isFetching && !isLoading ? (
+            <div
+              aria-label="Refreshing todos"
+              className={styles.refetchStrip}
+              role="status"
+            >
+              <Skeleton className={styles.refetchLine} variant="block" />
+            </div>
+          ) : null}
 
           {isLoading ? <TodoTableSkeleton rowCount={TODO_PAGE_SIZE} /> : null}
 

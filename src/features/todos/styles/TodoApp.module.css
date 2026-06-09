@@ -231,6 +231,17 @@
   text-align: center;
 }
 
+.refetchStrip {
+  display: grid;
+  min-height: 0.375rem;
+}
+
+.refetchLine {
+  height: 0.375rem;
+  min-height: 0.375rem;
+  border-radius: 999rem;
+}
+
 .list {
   display: grid;
   gap: var(--space-3);

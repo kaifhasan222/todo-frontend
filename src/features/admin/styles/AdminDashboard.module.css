@@ -271,6 +271,57 @@
   margin-top: var(--space-4);
 }
 
+.skeletonRow {
+  animation: skeletonFade 1.5s ease-in-out infinite;
+}
+
+.skeletonIdentity {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.skeletonName {
+  width: min(100%, 11rem);
+}
+
+.skeletonEmail {
+  width: min(100%, 16rem);
+}
+
+.skeletonRole {
+  width: 5.5rem;
+  height: 2rem;
+  border-radius: 999rem;
+}
+
+.skeletonDate {
+  width: 7rem;
+}
+
+.skeletonSelect,
+.skeletonAction {
+  height: 2.75rem;
+}
+
+.skeletonSelect {
+  width: 8rem;
+}
+
+.skeletonAction {
+  width: 7rem;
+}
+
+@keyframes skeletonFade {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 :global(:root[data-theme="dark"]) .userChip,
 :global(:root[data-theme="dark"]) .linkButton,
 :global(:root[data-theme="dark"]) .stats article,

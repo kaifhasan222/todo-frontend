@@ -1,0 +1,181 @@
+.page {
+  min-height: 100vh;
+  padding: var(--space-8) var(--space-4);
+  background:
+    linear-gradient(135deg, rgba(20, 108, 148, 0.12), transparent 36rem),
+    linear-gradient(315deg, rgba(23, 114, 69, 0.1), transparent 32rem),
+    var(--color-page);
+}
+
+.shell {
+  width: min(100%, 64rem);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.heading {
+  display: grid;
+  width: min(100%, 34rem);
+  gap: var(--space-3);
+}
+
+.kicker {
+  width: 8rem;
+}
+
+.title {
+  width: min(100%, 28rem);
+  height: 3.5rem;
+}
+
+.subtitle {
+  width: min(100%, 24rem);
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.actionPill,
+.actionPillSmall,
+.actionIcon {
+  height: 3rem;
+}
+
+.actionPill {
+  width: 8rem;
+}
+
+.actionPillSmall {
+  width: 6rem;
+}
+
+.actionIcon {
+  width: 3rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.stat,
+.panel {
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-panel);
+}
+
+.stat {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.statNumber {
+  width: 4rem;
+  height: 2rem;
+}
+
+.statLabel {
+  width: 6rem;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.panelControl {
+  width: 13rem;
+  height: 3rem;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem 10rem;
+  gap: var(--space-3);
+}
+
+.search,
+.filter {
+  height: 3rem;
+}
+
+.table {
+  display: grid;
+  overflow: hidden;
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) 7rem 7rem 6rem;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+  border-bottom: 0.0625rem solid var(--color-border);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.rowTitle {
+  width: min(100%, 22rem);
+}
+
+.rowBadge {
+  height: 1.875rem;
+  border-radius: 999rem;
+}
+
+.rowActions {
+  height: 2.25rem;
+}
+
+:global(:root[data-theme="dark"]) .stat,
+:global(:root[data-theme="dark"]) .panel {
+  background: rgba(19, 32, 39, 0.88);
+}
+
+@media (max-width: 48rem) {
+  .page {
+    padding: var(--space-6) var(--space-3);
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .stats,
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    grid-template-columns: minmax(12rem, 1fr) 6rem 6rem 5rem;
+    min-width: 38rem;
+  }
+}

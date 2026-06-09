@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/shared/components/Skeleton";
 import styles from "../styles/TodoTable.module.css";
 
 interface TodoTableSkeletonProps {
@@ -36,23 +37,23 @@ export function TodoTableSkeleton({ rowCount = 8 }: TodoTableSkeletonProps) {
           {Array.from({ length: rowCount }).map((_, index) => (
             <tr className={styles.skeletonRow} key={index}>
               <td className={styles.skeletonTitleCell}>
-                <span className={styles.skeletonTitle} />
+                <Skeleton className={styles.skeletonTitle} variant="text" />
               </td>
               <td className={styles.skeletonCell}>
-                <span className={styles.skeletonBadge} />
+                <Skeleton className={styles.skeletonBadge} variant="block" />
               </td>
               <td className={styles.skeletonCell}>
-                <span className={styles.skeletonBadge} />
+                <Skeleton className={styles.skeletonBadge} variant="block" />
               </td>
               <td className={styles.skeletonCell}>
-                <span className={styles.skeletonTags} />
+                <Skeleton className={styles.skeletonTags} variant="block" />
               </td>
               <td className={styles.skeletonCell}>
-                <span className={styles.skeletonBadge} />
+                <Skeleton className={styles.skeletonBadge} variant="block" />
               </td>
               <td className={styles.skeletonActionsCell}>
-                <span className={styles.skeletonIcon} />
-                <span className={styles.skeletonIcon} />
+                <Skeleton className={styles.skeletonIcon} variant="block" />
+                <Skeleton className={styles.skeletonIcon} variant="block" />
               </td>
             </tr>
           ))}

@@ -1,15 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
 import { AdminDashboard } from "@/features/admin/components/AdminDashboard";
+import { PageSkeleton } from "@/shared/components/PageSkeleton";
 import { useAuthSession } from "../hooks/useAuth";
 import { AuthScreen } from "./AuthScreen";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 import { TodoApp } from "@/features/todos/components/TodoApp";
-import styles from "../styles/AuthShell.module.css";
 
 interface AuthGateProps {
   view?: "user" | "admin";
@@ -38,52 +37,24 @@ export function AuthGate({ view = "user", initialMode = "login" }: AuthGateProps
   }, [router, status, user, view]);
 
   if (status === "loading") {
-    return (
-      <main className={styles.loadingPage}>
-        <div className={styles.loadingCard}>
-          <Loader2 className={styles.spinnerLarge} size="1.5rem" />
-          <p>Refreshing your secure session...</p>
-        </div>
-      </main>
-    );
+    return <PageSkeleton ariaLabel="Refreshing your secure session" />;
   }
 
   if (status === "authenticated") {
     if (!user) {
-      return (
-        <main className={styles.loadingPage}>
-          <div className={styles.loadingCard}>
-            <Loader2 className={styles.spinnerLarge} size="1.5rem" />
-            <p>Loading your workspace...</p>
-          </div>
-        </main>
-      );
+      return <PageSkeleton ariaLabel="Loading your workspace" />;
     }
 
     if (view === "admin") {
       if (user.role !== "ADMIN") {
-        return (
-          <main className={styles.loadingPage}>
-            <div className={styles.loadingCard}>
-              <Loader2 className={styles.spinnerLarge} size="1.5rem" />
-              <p>Redirecting to your workspace...</p>
-            </div>
-          </main>
-        );
+        return <PageSkeleton ariaLabel="Redirecting to your workspace" />;
       }
 
       return <AdminDashboard />;
     }
 
     if (user.role === "ADMIN") {
-      return (
-        <main className={styles.loadingPage}>
-          <div className={styles.loadingCard}>
-            <Loader2 className={styles.spinnerLarge} size="1.5rem" />
-            <p>Opening your admin console...</p>
-          </div>
-        </main>
-      );
+      return <PageSkeleton ariaLabel="Opening your admin console" />;
     }
 
     return <TodoApp />;

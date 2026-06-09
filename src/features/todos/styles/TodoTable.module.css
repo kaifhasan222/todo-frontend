@@ -190,73 +190,25 @@
 }
 
 .skeletonTitle {
-  display: block;
   width: min(100%, 20rem);
   height: 0.95rem;
-  border-radius: 999rem;
-  background: linear-gradient(
-    90deg,
-    rgba(23, 32, 42, 0.08) 0%,
-    rgba(23, 32, 42, 0.14) 50%,
-    rgba(23, 32, 42, 0.08) 100%
-  );
-  background-size: 12rem 100%;
-  animation: shimmer 1.4s linear infinite;
 }
 
 .skeletonBadge {
-  display: inline-block;
   width: 6rem;
   height: 1.875rem;
   border-radius: 999rem;
-  background: linear-gradient(
-    90deg,
-    rgba(23, 32, 42, 0.08) 0%,
-    rgba(23, 32, 42, 0.14) 50%,
-    rgba(23, 32, 42, 0.08) 100%
-  );
-  background-size: 12rem 100%;
-  animation: shimmer 1.4s linear infinite;
 }
 
 .skeletonTags {
-  display: inline-block;
   width: 10rem;
   height: 1.875rem;
   border-radius: 999rem;
-  background: linear-gradient(
-    90deg,
-    rgba(23, 32, 42, 0.08) 0%,
-    rgba(23, 32, 42, 0.14) 50%,
-    rgba(23, 32, 42, 0.08) 100%
-  );
-  background-size: 12rem 100%;
-  animation: shimmer 1.4s linear infinite;
 }
 
 .skeletonIcon {
-  display: inline-block;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    90deg,
-    rgba(23, 32, 42, 0.08) 0%,
-    rgba(23, 32, 42, 0.14) 50%,
-    rgba(23, 32, 42, 0.08) 100%
-  );
-  background-size: 12rem 100%;
-  animation: shimmer 1.4s linear infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -12rem 0;
-  }
-
-  100% {
-    background-position: 12rem 0;
-  }
 }
 
 @keyframes skeletonFade {
