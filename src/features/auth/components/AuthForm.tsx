@@ -15,7 +15,7 @@ import {
   type AuthValues,
   useAuthValidation,
 } from "../hooks/useAuthValidation";
-import type { AuthMode } from "../types/auth";
+import type { AuthMode, AuthSuccessResponse, RegisterResponse } from "../types/auth";
 import styles from "../styles/AuthShell.module.css";
 
 interface AuthFormProps {
@@ -54,6 +54,11 @@ const getFriendlyAuthError = (error: unknown, mode: AuthMode): string => {
 
   return getErrorMessage(error);
 };
+
+const isAuthenticatedRegisterResponse = (
+  response: RegisterResponse,
+): response is AuthSuccessResponse =>
+  "user" in response && "accessToken" in response;
 
 export function AuthForm({ mode }: AuthFormProps) {
   const loginMutation = useLoginMutation();
@@ -143,7 +148,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           password: values.password,
         });
         setSuccessMessage(response.message);
-        setVerificationEmail(values.email.trim());
+        setVerificationEmail(
+          isAuthenticatedRegisterResponse(response) ? "" : values.email.trim(),
+        );
         setValues((current) => ({
           ...current,
           password: "",

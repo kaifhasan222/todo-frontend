@@ -24,10 +24,12 @@ export interface AuthSuccessResponse {
   accessToken: string;
 }
 
-export interface RegisterResponse {
+export interface RegisterPendingResponse {
   message: string;
   code?: string;
 }
+
+export type RegisterResponse = RegisterPendingResponse | AuthSuccessResponse;
 
 export interface RefreshTokenResponse {
   accessToken: string;

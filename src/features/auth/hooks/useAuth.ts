@@ -8,9 +8,19 @@ import { getErrorMessage } from "@/shared/utils/getErrorMessage";
 import { useAuthSessionStore } from "@/shared/store/useAuthSessionStore";
 
 import { authApi } from "../api/authApi";
-import type { LoginInput, RegisterInput } from "../types/auth";
+import type {
+  AuthSuccessResponse,
+  LoginInput,
+  RegisterInput,
+  RegisterResponse,
+} from "../types/auth";
 
 const AUTH_SESSION_KEY = ["auth", "session"] as const;
+
+const isAuthenticatedRegisterResponse = (
+  response: RegisterResponse,
+): response is AuthSuccessResponse =>
+  "user" in response && "accessToken" in response;
 
 export function useAuthSession() {
   const setLoading = useAuthSessionStore((state) => state.setLoading);
@@ -71,9 +81,19 @@ export function useLoginMutation() {
 }
 
 export function useRegisterMutation() {
+  const queryClient = useQueryClient();
+  const setAuthenticated = useAuthSessionStore(
+    (state) => state.setAuthenticated,
+  );
+
   return useMutation({
     mutationFn: (input: RegisterInput) => authApi.register(input),
     onSuccess: async (data) => {
+      if (isAuthenticatedRegisterResponse(data)) {
+        setAuthenticated(data.user, data.accessToken);
+        queryClient.setQueryData(AUTH_SESSION_KEY, { user: data.user });
+      }
+
       toast.success(data.message);
     },
     onError: (error) => {
